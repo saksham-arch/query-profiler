@@ -29,29 +29,30 @@ def profile_query(
     """Execute and fully fetch one DB-API query without committing it."""
     kind = _statement_kind(sql)
     cursor = connection.cursor()
-    execute_started = clock()
-    cursor.execute(sql, parameters)
-    execute_ns = clock() - execute_started
-    if execute_ns < 0:
-        raise ValueError("clock must be monotonic")
-
-    rows: list[Any] = []
-    fetch_ns: Optional[int] = None
-    if cursor.description is not None:
-        fetch_started = clock()
-        rows = list(cursor.fetchall())
-        fetch_ns = clock() - fetch_started
-        if fetch_ns < 0:
+    try:
+        execute_started = clock()
+        cursor.execute(sql, parameters)
+        execute_ns = clock() - execute_started
+        if execute_ns < 0:
             raise ValueError("clock must be monotonic")
 
-    rowcount = cursor.rowcount
-    observation = QueryObservation(
-        statement_kind=kind,
-        execute_ns=execute_ns,
-        fetch_ns=fetch_ns,
-        rows_returned=len(rows),
-        rows_affected=rowcount if rowcount >= 0 else None,
-    )
-    cursor.close()
-    return observation, rows
+        rows: list[Any] = []
+        fetch_ns: Optional[int] = None
+        if cursor.description is not None:
+            fetch_started = clock()
+            rows = list(cursor.fetchall())
+            fetch_ns = clock() - fetch_started
+            if fetch_ns < 0:
+                raise ValueError("clock must be monotonic")
 
+        rowcount = cursor.rowcount
+        observation = QueryObservation(
+            statement_kind=kind,
+            execute_ns=execute_ns,
+            fetch_ns=fetch_ns,
+            rows_returned=len(rows),
+            rows_affected=rowcount if rowcount >= 0 else None,
+        )
+        return observation, rows
+    finally:
+        cursor.close()

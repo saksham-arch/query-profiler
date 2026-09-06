@@ -12,6 +12,28 @@ class FakeClock:
         return next(self.values)
 
 
+class FailingCursor:
+    description = None
+    rowcount = -1
+
+    def __init__(self) -> None:
+        self.closed = False
+
+    def execute(self, sql: str, parameters: tuple[object, ...]) -> None:
+        raise RuntimeError("database unavailable")
+
+    def close(self) -> None:
+        self.closed = True
+
+
+class FakeConnection:
+    def __init__(self, cursor: FailingCursor) -> None:
+        self._cursor = cursor
+
+    def cursor(self) -> FailingCursor:
+        return self._cursor
+
+
 class QueryMeasurementTests(unittest.TestCase):
     def setUp(self) -> None:
         self.connection = sqlite3.connect(":memory:")
@@ -49,6 +71,12 @@ class QueryMeasurementTests(unittest.TestCase):
     def test_rejects_empty_sql(self) -> None:
         with self.assertRaises(ValueError):
             profile_query(self.connection, "   ")
+
+    def test_closes_cursor_when_execution_fails(self) -> None:
+        cursor = FailingCursor()
+        with self.assertRaisesRegex(RuntimeError, "database unavailable"):
+            profile_query(FakeConnection(cursor), "SELECT 1", clock=FakeClock([0]))
+        self.assertTrue(cursor.closed)
 
 
 if __name__ == "__main__":

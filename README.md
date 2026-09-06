@@ -15,4 +15,5 @@ Run the tests with `python3 -m unittest discover -s tests`.
 Client-side timings include driver and local scheduling overhead. They do not
 replace database-native execution plans or server-side telemetry, and the
 helper never commits a transaction on the caller's behalf.
-
+Database cursors are closed on both successful and failed executions so a
+measurement cannot quietly exhaust driver resources.
