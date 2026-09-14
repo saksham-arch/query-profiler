@@ -10,6 +10,21 @@ from query_profiler import profile_query
 observation, rows = profile_query(connection, "SELECT * FROM events WHERE id = ?", (42,))
 ```
 
+Multiple observations can be summarized by statement kind without storing SQL
+text or parameter values:
+
+```python
+from query_profiler import summarize_observations
+
+for summary in summarize_observations(observations):
+    print(summary.statement_kind, summary.execute_median_ns)
+```
+
+The summary keeps separate counts for fetch and affected-row metrics because
+those values are not available for every kind of statement. Totals describe
+only the observations supplied by the caller; they are not database-wide
+telemetry.
+
 Run the tests with `python3 -m unittest discover -s tests`.
 
 Client-side timings include driver and local scheduling overhead. They do not
