@@ -25,6 +25,11 @@ those values are not available for every kind of statement. Totals describe
 only the observations supplied by the caller; they are not database-wide
 telemetry.
 
+Each observation also exposes `client_elapsed_ns`, the sum of its measured
+execute and fetch phases. Summaries report the total and median of that value.
+This is client-observed time, not server execution time, and it excludes work
+outside the two measured phases.
+
 Run the tests with `python3 -m unittest discover -s tests`.
 
 Client-side timings include driver and local scheduling overhead. They do not

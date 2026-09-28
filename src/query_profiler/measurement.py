@@ -11,6 +11,11 @@ class QueryObservation:
     rows_returned: int
     rows_affected: Optional[int]
 
+    @property
+    def client_elapsed_ns(self) -> int:
+        """Combined execute and fetch time observed by this client."""
+        return self.execute_ns + (self.fetch_ns or 0)
+
 
 def _statement_kind(sql: str) -> str:
     tokens = sql.strip().split()

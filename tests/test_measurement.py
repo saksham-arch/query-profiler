@@ -53,6 +53,7 @@ class QueryMeasurementTests(unittest.TestCase):
         self.assertEqual(observation.statement_kind, "SELECT")
         self.assertEqual(observation.execute_ns, 10)
         self.assertEqual(observation.fetch_ns, 15)
+        self.assertEqual(observation.client_elapsed_ns, 25)
         self.assertEqual(observation.rows_returned, 2)
         self.assertIsNone(observation.rows_affected)
 
@@ -66,6 +67,7 @@ class QueryMeasurementTests(unittest.TestCase):
         self.assertEqual(rows, [])
         self.assertEqual(observation.rows_affected, 1)
         self.assertIsNone(observation.fetch_ns)
+        self.assertEqual(observation.client_elapsed_ns, 8)
         self.assertTrue(self.connection.in_transaction)
 
     def test_rejects_empty_sql(self) -> None:

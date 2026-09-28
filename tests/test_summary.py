@@ -17,6 +17,8 @@ class QuerySummaryTests(unittest.TestCase):
         self.assertEqual(select_summary.observation_count, 2)
         self.assertEqual(select_summary.execute_total_ns, 30)
         self.assertEqual(select_summary.execute_median_ns, 15)
+        self.assertEqual(select_summary.client_elapsed_total_ns, 42)
+        self.assertEqual(select_summary.client_elapsed_median_ns, 21)
         self.assertEqual(select_summary.fetch_observation_count, 2)
         self.assertEqual(select_summary.fetch_total_ns, 12)
         self.assertEqual(select_summary.fetch_median_ns, 6)
@@ -25,6 +27,7 @@ class QuerySummaryTests(unittest.TestCase):
 
         self.assertEqual(update_summary.statement_kind, "UPDATE")
         self.assertIsNone(update_summary.fetch_median_ns)
+        self.assertEqual(update_summary.client_elapsed_total_ns, 12)
         self.assertEqual(update_summary.rows_affected_observation_count, 1)
         self.assertEqual(update_summary.rows_affected_total, 2)
 
