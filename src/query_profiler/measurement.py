@@ -16,6 +16,13 @@ class QueryObservation:
         """Combined execute and fetch time observed by this client."""
         return self.execute_ns + (self.fetch_ns or 0)
 
+    @property
+    def fetch_ns_per_returned_row(self) -> Optional[float]:
+        """Return client fetch time per row, or None when no rows were returned."""
+        if self.fetch_ns is None or self.rows_returned == 0:
+            return None
+        return self.fetch_ns / self.rows_returned
+
 
 def _statement_kind(sql: str) -> str:
     tokens = sql.strip().split()

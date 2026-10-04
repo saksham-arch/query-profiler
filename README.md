@@ -30,6 +30,11 @@ execute and fetch phases. Summaries report the total and median of that value.
 This is client-observed time, not server execution time, and it excludes work
 outside the two measured phases.
 
+Fetch observations and statement summaries also report nanoseconds per returned
+row. The value is `None` for empty results rather than dividing by zero. It
+includes driver, transfer, conversion, and fixed fetch overhead, so it is a
+client-side diagnostic ratio—not a database server's row-processing cost.
+
 Run the tests with `python3 -m unittest discover -s tests`.
 
 Client-side timings include driver and local scheduling overhead. They do not

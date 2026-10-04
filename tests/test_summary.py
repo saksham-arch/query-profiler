@@ -23,6 +23,7 @@ class QuerySummaryTests(unittest.TestCase):
         self.assertEqual(select_summary.fetch_total_ns, 12)
         self.assertEqual(select_summary.fetch_median_ns, 6)
         self.assertEqual(select_summary.rows_returned_total, 4)
+        self.assertEqual(select_summary.fetch_ns_per_returned_row, 3.0)
         self.assertEqual(select_summary.rows_affected_observation_count, 0)
 
         self.assertEqual(update_summary.statement_kind, "UPDATE")
@@ -30,6 +31,14 @@ class QuerySummaryTests(unittest.TestCase):
         self.assertEqual(update_summary.client_elapsed_total_ns, 12)
         self.assertEqual(update_summary.rows_affected_observation_count, 1)
         self.assertEqual(update_summary.rows_affected_total, 2)
+        self.assertIsNone(update_summary.fetch_ns_per_returned_row)
+
+    def test_zero_row_fetch_does_not_invent_per_row_cost(self) -> None:
+        summary = summarize_observations(
+            [QueryObservation("SELECT", 10, 5, 0, None)]
+        )[0]
+        self.assertEqual(summary.fetch_total_ns, 5)
+        self.assertIsNone(summary.fetch_ns_per_returned_row)
 
     def test_empty_input_produces_no_summaries(self) -> None:
         self.assertEqual(summarize_observations([]), ())

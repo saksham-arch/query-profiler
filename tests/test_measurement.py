@@ -55,6 +55,7 @@ class QueryMeasurementTests(unittest.TestCase):
         self.assertEqual(observation.fetch_ns, 15)
         self.assertEqual(observation.client_elapsed_ns, 25)
         self.assertEqual(observation.rows_returned, 2)
+        self.assertEqual(observation.fetch_ns_per_returned_row, 7.5)
         self.assertIsNone(observation.rows_affected)
 
     def test_reports_affected_rows_without_committing(self) -> None:
@@ -69,6 +70,16 @@ class QueryMeasurementTests(unittest.TestCase):
         self.assertIsNone(observation.fetch_ns)
         self.assertEqual(observation.client_elapsed_ns, 8)
         self.assertTrue(self.connection.in_transaction)
+
+    def test_row_normalized_fetch_time_is_missing_for_empty_result(self) -> None:
+        observation, rows = profile_query(
+            self.connection,
+            "SELECT id FROM events WHERE id = -1",
+            clock=FakeClock([0, 2, 3, 8]),
+        )
+        self.assertEqual(rows, [])
+        self.assertEqual(observation.fetch_ns, 5)
+        self.assertIsNone(observation.fetch_ns_per_returned_row)
 
     def test_rejects_empty_sql(self) -> None:
         with self.assertRaises(ValueError):

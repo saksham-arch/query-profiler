@@ -17,6 +17,7 @@ class QuerySummary:
     fetch_total_ns: int
     fetch_median_ns: Optional[float]
     rows_returned_total: int
+    fetch_ns_per_returned_row: Optional[float]
     rows_affected_observation_count: int
     rows_affected_total: int
 
@@ -46,6 +47,9 @@ def summarize_observations(
             for observation in group
             if observation.rows_affected is not None
         ]
+        rows_returned_total = sum(
+            observation.rows_returned for observation in group
+        )
         summaries.append(
             QuerySummary(
                 statement_kind=statement_kind,
@@ -57,8 +61,11 @@ def summarize_observations(
                 fetch_observation_count=len(fetch_samples),
                 fetch_total_ns=sum(fetch_samples),
                 fetch_median_ns=median(fetch_samples) if fetch_samples else None,
-                rows_returned_total=sum(
-                    observation.rows_returned for observation in group
+                rows_returned_total=rows_returned_total,
+                fetch_ns_per_returned_row=(
+                    sum(fetch_samples) / rows_returned_total
+                    if rows_returned_total > 0
+                    else None
                 ),
                 rows_affected_observation_count=len(affected_rows),
                 rows_affected_total=sum(affected_rows),
