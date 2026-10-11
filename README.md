@@ -35,6 +35,12 @@ row. The value is `None` for empty results rather than dividing by zero. It
 includes driver, transfer, conversion, and fixed fetch overhead, so it is a
 client-side diagnostic ratio—not a database server's row-processing cost.
 
+Summaries report `fetch_share_of_client_elapsed` when fetch observations and a
+positive combined client duration are available. This divides total measured
+fetch time by total execute-plus-fetch time for that statement kind. It helps
+locate client-side phase balance, but it does not separate server execution,
+network transfer, driver conversion, or scheduling overhead.
+
 Run the tests with `python3 -m unittest discover -s tests`.
 
 Client-side timings include driver and local scheduling overhead. They do not
