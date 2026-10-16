@@ -35,6 +35,13 @@ row. The value is `None` for empty results rather than dividing by zero. It
 includes driver, transfer, conversion, and fixed fetch overhead, so it is a
 client-side diagnostic ratio—not a database server's row-processing cost.
 
+Write observations and summaries report execute nanoseconds per affected row
+when the driver supplies a positive affected-row count. Summary values divide
+the execute time of observations with known counts by their total affected
+rows. The value is `None` when no rows were affected, and it includes client,
+driver, network, and fixed statement overhead rather than measuring server-only
+row-update cost.
+
 Summaries report `fetch_share_of_client_elapsed` when fetch observations and a
 positive combined client duration are available. This divides total measured
 fetch time by total execute-plus-fetch time for that statement kind. It helps

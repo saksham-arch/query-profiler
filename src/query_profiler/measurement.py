@@ -23,6 +23,13 @@ class QueryObservation:
             return None
         return self.fetch_ns / self.rows_returned
 
+    @property
+    def execute_ns_per_affected_row(self) -> Optional[float]:
+        """Return execute time per affected row when a positive count exists."""
+        if self.rows_affected is None or self.rows_affected <= 0:
+            return None
+        return self.execute_ns / self.rows_affected
+
 
 def _statement_kind(sql: str) -> str:
     tokens = sql.strip().split()

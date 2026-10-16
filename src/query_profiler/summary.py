@@ -21,6 +21,7 @@ class QuerySummary:
     fetch_ns_per_returned_row: Optional[float]
     rows_affected_observation_count: int
     rows_affected_total: int
+    execute_ns_per_affected_row: Optional[float]
 
 
 def summarize_observations(
@@ -48,6 +49,12 @@ def summarize_observations(
             for observation in group
             if observation.rows_affected is not None
         ]
+        affected_execute_total_ns = sum(
+            observation.execute_ns
+            for observation in group
+            if observation.rows_affected is not None
+        )
+        rows_affected_total = sum(affected_rows)
         rows_returned_total = sum(
             observation.rows_returned for observation in group
         )
@@ -76,7 +83,12 @@ def summarize_observations(
                     else None
                 ),
                 rows_affected_observation_count=len(affected_rows),
-                rows_affected_total=sum(affected_rows),
+                rows_affected_total=rows_affected_total,
+                execute_ns_per_affected_row=(
+                    affected_execute_total_ns / rows_affected_total
+                    if rows_affected_total > 0
+                    else None
+                ),
             )
         )
     return tuple(summaries)
