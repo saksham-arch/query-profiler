@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import ceil
 from statistics import median
 from typing import Iterable, Optional
 
@@ -11,17 +12,25 @@ class QuerySummary:
     observation_count: int
     execute_total_ns: int
     execute_median_ns: float
+    execute_p95_ns: int
     client_elapsed_total_ns: int
     client_elapsed_median_ns: float
+    client_elapsed_p95_ns: int
     fetch_observation_count: int
     fetch_total_ns: int
     fetch_median_ns: Optional[float]
+    fetch_p95_ns: Optional[int]
     fetch_share_of_client_elapsed: Optional[float]
     rows_returned_total: int
     fetch_ns_per_returned_row: Optional[float]
     rows_affected_observation_count: int
     rows_affected_total: int
     execute_ns_per_affected_row: Optional[float]
+
+
+def _nearest_rank_p95(samples: list[int]) -> int:
+    ordered = sorted(samples)
+    return ordered[ceil(0.95 * len(ordered)) - 1]
 
 
 def summarize_observations(
@@ -66,11 +75,16 @@ def summarize_observations(
                 observation_count=len(group),
                 execute_total_ns=sum(execute_samples),
                 execute_median_ns=median(execute_samples),
+                execute_p95_ns=_nearest_rank_p95(execute_samples),
                 client_elapsed_total_ns=client_elapsed_total_ns,
                 client_elapsed_median_ns=median(client_elapsed_samples),
+                client_elapsed_p95_ns=_nearest_rank_p95(client_elapsed_samples),
                 fetch_observation_count=len(fetch_samples),
                 fetch_total_ns=fetch_total_ns,
                 fetch_median_ns=median(fetch_samples) if fetch_samples else None,
+                fetch_p95_ns=(
+                    _nearest_rank_p95(fetch_samples) if fetch_samples else None
+                ),
                 fetch_share_of_client_elapsed=(
                     fetch_total_ns / client_elapsed_total_ns
                     if fetch_samples and client_elapsed_total_ns > 0

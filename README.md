@@ -25,6 +25,12 @@ those values are not available for every kind of statement. Totals describe
 only the observations supplied by the caller; they are not database-wide
 telemetry.
 
+Execute, fetch, and combined client timings include both median and
+nearest-rank p95 values. Fetch p95 is `None` for statement kinds without a
+fetch phase. Tail summaries are descriptive, especially for small samples;
+they do not establish a latency objective or explain whether variation came
+from the database, network, driver, or client scheduling.
+
 Each observation also exposes `client_elapsed_ns`, the sum of its measured
 execute and fetch phases. Summaries report the total and median of that value.
 This is client-observed time, not server execution time, and it excludes work
@@ -48,7 +54,7 @@ fetch time by total execute-plus-fetch time for that statement kind. It helps
 locate client-side phase balance, but it does not separate server execution,
 network transfer, driver conversion, or scheduling overhead.
 
-Run the tests with `python3 -m unittest discover -s tests`.
+Run the tests with `PYTHONPATH=src python3 -m unittest discover -s tests`.
 
 Client-side timings include driver and local scheduling overhead. They do not
 replace database-native execution plans or server-side telemetry, and the
