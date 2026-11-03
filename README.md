@@ -4,6 +4,11 @@ A DB-API query measurement primitive that separates execute time from result
 fetch time. Observations retain only the statement kind and numeric metrics;
 SQL text and parameter values are deliberately excluded.
 
+The statement kind is the first SQL keyword after leading `--` and `/* ... */`
+comments. A common table expression is therefore labeled `WITH`; this is a
+lightweight label, not a full SQL parser. Comment-only or unterminated leading
+comments are rejected before a cursor is opened.
+
 ```python
 from query_profiler import profile_query
 

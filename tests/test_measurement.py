@@ -87,6 +87,20 @@ class QueryMeasurementTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             profile_query(self.connection, "   ")
 
+    def test_statement_kind_skips_leading_sql_comments(self) -> None:
+        observation, rows = profile_query(
+            self.connection,
+            "  -- source: dashboard\n/* cached report */ SELECT id FROM events",
+            clock=FakeClock([0, 2, 3, 5]),
+        )
+        self.assertEqual(observation.statement_kind, "SELECT")
+        self.assertEqual(len(rows), 2)
+
+    def test_rejects_comment_only_or_unterminated_sql(self) -> None:
+        for sql in ("-- no statement", "/* no statement */", "/* unfinished"):
+            with self.subTest(sql=sql), self.assertRaises(ValueError):
+                profile_query(self.connection, sql)
+
     def test_closes_cursor_when_execution_fails(self) -> None:
         cursor = FailingCursor()
         with self.assertRaisesRegex(RuntimeError, "database unavailable"):

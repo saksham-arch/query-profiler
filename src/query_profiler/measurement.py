@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import re
 from time import perf_counter_ns
 from typing import Any, Callable, Optional, Sequence
 
@@ -32,10 +33,22 @@ class QueryObservation:
 
 
 def _statement_kind(sql: str) -> str:
-    tokens = sql.strip().split()
-    if not tokens:
-        raise ValueError("sql must not be empty")
-    return tokens[0].upper()
+    remaining = sql.lstrip()
+    while remaining.startswith(("--", "/*")):
+        if remaining.startswith("--"):
+            _, separator, remaining = remaining.partition("\n")
+            if not separator:
+                remaining = ""
+        else:
+            end = remaining.find("*/", 2)
+            if end < 0:
+                raise ValueError("sql has an unterminated leading comment")
+            remaining = remaining[end + 2 :]
+        remaining = remaining.lstrip()
+    keyword = re.match(r"[A-Za-z]+", remaining)
+    if keyword is None:
+        raise ValueError("sql must start with a statement keyword")
+    return keyword.group().upper()
 
 
 def profile_query(
