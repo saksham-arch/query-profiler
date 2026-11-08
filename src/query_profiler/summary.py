@@ -22,6 +22,7 @@ class QuerySummary:
     fetch_p95_ns: Optional[int]
     fetch_share_of_client_elapsed: Optional[float]
     rows_returned_total: int
+    rows_returned_median_per_fetch: Optional[float]
     fetch_ns_per_returned_row: Optional[float]
     rows_affected_observation_count: int
     rows_affected_total: int
@@ -50,6 +51,11 @@ def summarize_observations(
         ]
         fetch_samples = [
             observation.fetch_ns
+            for observation in group
+            if observation.fetch_ns is not None
+        ]
+        fetched_row_counts = [
+            observation.rows_returned
             for observation in group
             if observation.fetch_ns is not None
         ]
@@ -91,6 +97,9 @@ def summarize_observations(
                     else None
                 ),
                 rows_returned_total=rows_returned_total,
+                rows_returned_median_per_fetch=(
+                    median(fetched_row_counts) if fetched_row_counts else None
+                ),
                 fetch_ns_per_returned_row=(
                     fetch_total_ns / rows_returned_total
                     if rows_returned_total > 0

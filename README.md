@@ -46,6 +46,11 @@ row. The value is `None` for empty results rather than dividing by zero. It
 includes driver, transfer, conversion, and fixed fetch overhead, so it is a
 client-side diagnostic ratio—not a database server's row-processing cost.
 
+`rows_returned_median_per_fetch` describes the typical result size among
+observations that fetched rows, including empty results. It is `None` when no
+fetch phase occurred. Result size can explain timing shifts without identifying
+their cause.
+
 Write observations and summaries report execute nanoseconds per affected row
 when the driver supplies a positive affected-row count. Summary values divide
 the execute time of observations with known counts by their total affected
