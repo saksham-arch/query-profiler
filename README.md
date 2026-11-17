@@ -45,6 +45,9 @@ Fetch observations and statement summaries also report nanoseconds per returned
 row. The value is `None` for empty results rather than dividing by zero. It
 includes driver, transfer, conversion, and fixed fetch overhead, so it is a
 client-side diagnostic ratio—not a database server's row-processing cost.
+The median per-fetch row-normalized value gives each nonempty fetch equal
+weight. Inspect it beside the aggregate ratio: different result sizes can
+make the two disagree, and neither isolates database execution time.
 
 `rows_returned_median_per_fetch` describes the typical result size among
 observations that fetched rows, including empty results. It is `None` when no

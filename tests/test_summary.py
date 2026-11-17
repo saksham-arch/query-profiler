@@ -29,6 +29,7 @@ class QuerySummaryTests(unittest.TestCase):
         self.assertEqual(select_summary.rows_returned_total, 4)
         self.assertEqual(select_summary.rows_returned_median_per_fetch, 2)
         self.assertEqual(select_summary.fetch_ns_per_returned_row, 3.0)
+        self.assertAlmostEqual(select_summary.median_fetch_ns_per_returned_row, 10 / 3)
         self.assertEqual(select_summary.rows_affected_observation_count, 0)
 
         self.assertEqual(update_summary.statement_kind, "UPDATE")
@@ -51,6 +52,18 @@ class QuerySummaryTests(unittest.TestCase):
         self.assertEqual(summary.rows_returned_median_per_fetch, 0)
         self.assertEqual(summary.fetch_share_of_client_elapsed, 1 / 3)
         self.assertIsNone(summary.fetch_ns_per_returned_row)
+        self.assertIsNone(summary.median_fetch_ns_per_returned_row)
+
+    def test_median_per_row_fetch_cost_does_not_weight_large_results(self) -> None:
+        summary = summarize_observations(
+            [
+                QueryObservation("SELECT", 1, 100, 100, None),
+                QueryObservation("SELECT", 1, 10, 1, None),
+                QueryObservation("SELECT", 1, 5, 0, None),
+            ]
+        )[0]
+        self.assertEqual(summary.fetch_ns_per_returned_row, 115 / 101)
+        self.assertEqual(summary.median_fetch_ns_per_returned_row, 5.5)
 
     def test_zero_duration_query_does_not_invent_fetch_share(self) -> None:
         summary = summarize_observations(
